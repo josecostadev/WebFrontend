@@ -6,6 +6,10 @@
 import { Component, Vue } from 'vue-property-decorator';
 import GroupsList from '@/components/groups/GroupsList.vue';
 import { GroupViewModel } from '@/components/groups/models';
+import { types } from '@/store/modules/groups/actions';
+import { State, namespace } from 'vuex-class';
+
+const groupsModule = namespace('groups');
 
 @Component({
     components: {
@@ -15,26 +19,33 @@ import { GroupViewModel } from '@/components/groups/models';
 
 export default class Groups extends Vue {
 
-    private currentId: number = 0;
-    private groups: GroupViewModel[] = [
-      {id: ++this.currentId, name: 'Group 1', rowVersion: 'a'},
-      {id: ++this.currentId, name: 'Group 2', rowVersion: 'b'},
-      {id: ++this.currentId, name: 'Group 3', rowVersion: 'c'}
-    ];
+  @groupsModule.State('groups') private groups!: GroupViewModel[];
+  @groupsModule.Action('loadGroups') private loadGroups!: () => void;
 
-    private updateHandler(group: GroupViewModel): void {
-        const index = this.groups.findIndex((g) => g.id === group.id);
-        this.groups = [...this.groups.slice(0, index), group, ...this.groups.slice(index + 1, this.groups.length)];
-    }
+  public mounted(): void {
+    // this.$store.dispatch(types.LOAD_GROUPS);
+    this.loadGroups();
+  }
 
-    private removeHandler(id: number): void {
-        this.groups = this.groups.filter((g) => g.id !== id);
-    }
-    
-    private addHandler(group: GroupViewModel): void {
-        group.id = ++this.currentId;
-        this.groups = [...this.groups, group];
-    }
+  // private get groups(): GroupViewModel[] {
+  //   state -> module -> state inside the module
+  //   return this.$store.state.groups.groups;
+  // }
+
+  private updateHandler(group: GroupViewModel): void {
+    // this.$store.commit('update', group);
+    this.$store.dispatch(types.UPDATE_GROUP, group);
+  }
+
+  private removeHandler(id: number): void {
+    // this.$store.commit('remove', id);
+    this.$store.dispatch(types.REMOVE_GROUP, id);
+  }
+  
+  private addHandler(group: GroupViewModel): void {
+    // this.$store.commit('add', group);
+    this.$store.dispatch(types.ADD_GROUP, group);
+  }
 }
 </script>
 
